@@ -1,8 +1,8 @@
-import { readDataFromExcel, saveDataToExcel } from "../excel_tools";
+import { readDataFromExcel, saveDataToExcel } from "../excel_tools.js";
 import {
   convertAddressToCoordinates,
   convertCoordinatesFromWGS84,
-} from "../coords_tools";
+} from "../coords_tools.js";
 
 const sourceExcelPath = process.env.TARGET_FILE_PATH; // 원본 엑셀 파일 경로
 const resultExcelPath = process.env.RESULT_FILE_PATH; // 결과 엑셀 파일 경로
