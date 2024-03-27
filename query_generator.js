@@ -19,7 +19,7 @@ let queryStrings = "";
 for (let i = 1; i < rows.length; i++) {
   const row = rows[i];
   // id, name, address, coords에 해당하는 값 할당
-  const [id, name, address, coords] = row;
+  const [id, name, gu, dong, address, coords] = row;
   // address에서 SIGUN과 ADMDONG 추출
   const addressParts = address.split(" ");
   const sigun = addressParts[1] ? addressParts[1] : ""; // 첫 번째 공백과 두 번째 공백 사이의 값
@@ -33,10 +33,13 @@ for (let i = 1; i < rows.length; i++) {
   }
   const x = pointArray[0];
   const y = pointArray[1];
-  // SDO_GEOMETRY 쿼리 문자열 생성
-  const sdoGeometryString = `MDSYS.SDO_GEOMETRY(${sdoGtype}, ${sdoSrid}, MDSYS.SDO_POINT_TYPE(${x}, ${y}, NULL), NULL, NULL)`;
+  // SDO_GEOMETRY 쿼리 문자열 생성 - 변환 동시 진행
+  const sdoGeometryString = `SDO_CS.TRANSFORM(
+    MDSYS.SDO_GEOMETRY(${sdoGtype}, ${sdoSrid}, MDSYS.SDO_POINT_TYPE(${x}, ${y}, NULL), NULL, NULL),
+    5186
+  )`;
   // 쿼리 문자열 생성
-  const queryString = `INSERT INTO SAHA_GIS.GIS_EX_CENTER3 (OGR_FID, GEOMETRY, DBPID, OBJECTID, SIGUN, ADMDONG, ADDRESS, NAME, "OPEN", TFLOOR, "ADD", UFLOOR, DUPADD, WIND1, NEWNAME, "TIME", MODNAME, MODADD, NEWADDRESS, JOINID, PRE, BDMGTSN, ORID, TYPEAC, TYPEBC, TYPEAD, TYPEBD, UFID, XCOOR, YCOOR, AREA, TAREA, INSDATE, ISSDATE, OPENRE, PDFURL) VALUES(0, ${sdoGeometryString}, 0, '', '${sigun}', '${admdong}', '${address}', '${name}', '', '', '', '', '', '', '${name}', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '/pdf/ex_center/${id}.pdf');\n`;
+  const queryString = `INSERT INTO SAHA_GIS.GIS_EX_CENTER (OGR_FID, GEOMETRY, DBPID, OBJECTID, SIGUN, ADMDONG, ADDRESS, NAME, "OPEN", TFLOOR, "ADD", UFLOOR, DUPADD, WIND1, NEWNAME, "TIME", MODNAME, MODADD, NEWADDRESS, JOINID, PRE, BDMGTSN, ORID, TYPEAC, TYPEBC, TYPEAD, TYPEBD, UFID, XCOOR, YCOOR, AREA, TAREA, INSDATE, ISSDATE, OPENRE, PDFURL) VALUES('${id}', ${sdoGeometryString}, ${i}, '', '${gu}', '${admdong}', '${address}', '${name}', '', '', '', '', '', '', '${name}', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '/pdf/ex_center/${gu}/${dong}/${id}.pdf');\n`;
   // 쿼리 문자열을 전체 문자열에 추가
   queryStrings += queryString;
 }
