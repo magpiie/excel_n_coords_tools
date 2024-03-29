@@ -1,11 +1,5 @@
-import { readDataFromExcel, saveDataToExcel } from "../excel_tools.js";
-import {
-  convertAddressToCoordinates,
-  convertCoordinatesFromWGS84,
-} from "../coords_tools.js";
-
-const sourceExcelPath = process.env.TARGET_FILE_PATH; // 원본 엑셀 파일 경로
-const resultExcelPath = process.env.RESULT_FILE_PATH; // 결과 엑셀 파일 경로
+import { readDataFromExcel, saveDataToExcel } from "../tools/excel_tools.js";
+import { convertAddressToCoordinates } from "../tools/coords_tools.js";
 
 // 저장할 엑셀 헤더 정보
 const excelHeaderInfo = ["id", "name", "gu", "dong", "address", "coords"];
@@ -13,7 +7,7 @@ const excelHeaderInfo = ["id", "name", "gu", "dong", "address", "coords"];
 // 메인 로직
 let originCoordsSystem = 4326;
 let targetCoordsSystem = 5186;
-async function main() {
+export async function convertGeo_v1(sourceExcelPath, resultExcelPath) {
   const data = await readDataFromExcel(sourceExcelPath);
   const results = [];
 
@@ -49,4 +43,4 @@ async function main() {
   console.log("작업 완료");
 }
 
-main().catch(console.error);
+// convertGeo_v1().catch(console.error);

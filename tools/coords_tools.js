@@ -1,9 +1,17 @@
+import path from "path";
+import { fileURLToPath } from "url";
+import dotenv from "dotenv";
+
 import fetch from "node-fetch";
 import proj4 from "proj4";
 
-// 주소를 좌표로 변환하는 함수
+const __filename = fileURLToPath(import.meta.url); // 현재 파일의 URL을 파일 경로로 변환
+const __dirname = path.dirname(__filename); // __filename에서 디렉토리 경로만 추출
+dotenv.config({ path: path.resolve(__dirname, "./.env") });
+
 const kakaoRESTApiKey = process.env.KAKAO_API_KEY;
 
+// 주소를 좌표로 변환하는 함수
 export async function convertAddressToCoordinates(address) {
   const response = await fetch(
     `https://dapi.kakao.com/v2/local/search/address.json?query=${encodeURIComponent(
@@ -16,7 +24,9 @@ export async function convertAddressToCoordinates(address) {
     }
   );
   const data = await response.json();
-  return data.documents[0];
+  if (data?.documents) {
+    return data.documents[0];
+  }
 }
 
 // WGS84 좌표계 (EPSG:4326) & KATEC 좌표계 (EPSG:5186) & GS84 좌표계 (EPSG:5179)의 정의
