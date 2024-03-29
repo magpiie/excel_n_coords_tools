@@ -3,6 +3,7 @@ import proj4 from "proj4";
 
 // 주소를 좌표로 변환하는 함수
 const kakaoRESTApiKey = process.env.KAKAO_API_KEY;
+
 export async function convertAddressToCoordinates(address) {
   const response = await fetch(
     `https://dapi.kakao.com/v2/local/search/address.json?query=${encodeURIComponent(
@@ -28,6 +29,7 @@ proj4.defs(
   "EPSG:5179",
   "+proj=tmerc +lat_0=38 +lon_0=127 +k=1 +x_0=200000 +y_0=600000 +ellps=GRS80 +units=m +no_defs"
 );
+
 // 좌표 변환 함수
 // let originSystem = 4326;
 // let targetSystem = 5186;
