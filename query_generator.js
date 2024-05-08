@@ -2,6 +2,9 @@ import XLSX from "xlsx";
 import fs from "fs";
 import dotenv from "dotenv";
 
+import dongInfo from "./assets/dong_info.json" assert { type: "json" };
+import guInfo from "./assets/gu_info.json" assert { type: "json" };
+
 dotenv.config();
 const resultExcelPath = process.env.RESULT_FILE_PATH; // 결과 엑셀 파일 경로
 
@@ -16,7 +19,8 @@ const rows = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
 
 // 쿼리문을 저장할 문자열 초기화
 let queryStrings = "";
-const targetGeoSytem = process.argv[2];
+const originGeoSystem = process.argv[2];
+const targetGeoSytem = process.argv[3];
 
 // 첫 번째 행은 컬럼 이름이므로 데이터 로우는 두 번째 행부터 시작
 for (let i = 1; i < rows.length; i++) {
@@ -34,18 +38,26 @@ for (let i = 1; i < rows.length; i++) {
     console.error("Invalid pointArray format:", pointArray);
     continue; // 해당 로우를 스킵하고 다음 로우로 넘어갑니다.
   }
+
+  // 파일경로를 위해 행정구 이름 한글 -> 영문 변환
+  const gu_name = guInfo[gu];
+  const dong_name = dongInfo[gu_name][dong];
+
   // SDO_GEOMETRY 쿼리 문자열 생성 - 변환 동시 진행
   const sdoGeometryString = `SDO_CS.TRANSFORM(
-    MDSYS.SDO_GEOMETRY(${sdo_gtype}, ${sdo_srid}, MDSYS.SDO_POINT_TYPE(${x}, ${y}, NULL), NULL, NULL),
+    MDSYS.SDO_GEOMETRY(${sdo_gtype}, ${originGeoSystem}, MDSYS.SDO_POINT_TYPE(${x}, ${y}, NULL), NULL, NULL),
     ${targetGeoSytem}
   )`;
   // 쿼리 문자열 생성
-  const queryString = `INSERT INTO SAHA_GIS.GIS_EX_CENTER (OGR_FID, GEOMETRY, DBPID, OBJECTID, SIGUN, ADMDONG, ADDRESS, NAME, "OPEN", TFLOOR, "ADD", UFLOOR, DUPADD, WIND1, NEWNAME, "TIME", MODNAME, MODADD, NEWADDRESS, JOINID, PRE, BDMGTSN, ORID, TYPEAC, TYPEBC, TYPEAD, TYPEBD, UFID, XCOOR, YCOOR, AREA, TAREA, INSDATE, ISSDATE, OPENRE, PDFURL) VALUES('${id}', ${sdoGeometryString}, ${i}, '', '${gu}', '${admdong}', '${address}', '${name}', '', '', '', '', '', '', '${name}', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '/pdf/ex_center/${gu}/${dong}/${id}.pdf');\n`;
+  const queryString = `INSERT INTO SAHA_GIS.GIS_EX_CENTER (OGR_FID, GEOMETRY, DBPID, OBJECTID, SIGUN, ADMDONG, ADDRESS, NAME, "OPEN", TFLOOR, "ADD", UFLOOR, DUPADD, WIND1, NEWNAME, "TIME", MODNAME, MODADD, NEWADDRESS, JOINID, PRE, BDMGTSN, ORID, TYPEAC, TYPEBC, TYPEAD, TYPEBD, UFID, XCOOR, YCOOR, AREA, TAREA, INSDATE, ISSDATE, OPENRE, PDFURL) VALUES(${i}, ${sdoGeometryString}, ${i}, '', '${gu}', '${admdong}', '${address}', '${name}', '', '', '', '', '', '', '${name}', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '/pdf/ex_center/${gu_name}/${dong_name}/${id}.pdf');\n`;
   // 쿼리 문자열을 전체 문자열에 추가
   queryStrings += queryString;
 }
 
 // 생성된 쿼리 문자열을 파일에 쓰기
-fs.writeFileSync("C:/Users/JJJ/Desktop/report/result_query.txt", queryStrings);
+fs.writeFileSync(
+  `C:/Users/JJJ/Desktop/report/result_query_${Date.now()}.txt`,
+  queryStrings
+);
 
 console.log("쿼리문이 result_query.txt 파일에 저장되었습니다.");
